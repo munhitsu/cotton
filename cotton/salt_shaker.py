@@ -217,28 +217,27 @@ class Shaker(object):
 
         repo_dir = os.path.join(self.repos_dir, formula['name'] + "-formula")
 
-        with GitSshEnvWrapper():
-            repo = self._open_repo(repo_dir, formula['url'])
+        repo = self._open_repo(repo_dir, formula['url'])
 
-            sha = self._fetch_and_resolve_sha(formula, repo)
+        sha = self._fetch_and_resolve_sha(formula, repo)
 
-            target = os.path.join(self.roots_dir, formula['name'])
-            if sha is None:
-                if not os.path.exists(target):
-                    raise RuntimeError("%s: Formula marked as resolved but target '%s' didn't exist" % (formula['name'], target))
-                return repo_dir, target
+        target = os.path.join(self.roots_dir, formula['name'])
+        if sha is None:
+            if not os.path.exists(target):
+                raise RuntimeError("%s: Formula marked as resolved but target '%s' didn't exist" % (formula['name'], target))
+            return repo_dir, target
 
-            # TODO: Check if the working tree is dirty, and (if request/flagged)
-            # reset it to this sha
-            if not repo.head.is_valid():
-                logging.debug("Resetting invalid head on: {}\n".format(formula['name']))
-                repo.head.reset(commit=sha, index=True, working_tree=True)
+        # TODO: Check if the working tree is dirty, and (if request/flagged)
+        # reset it to this sha
+        if not repo.head.is_valid():
+            logging.debug("Resetting invalid head on: {}\n".format(formula['name']))
+            repo.head.reset(commit=sha, index=True, working_tree=True)
 
-            if repo.head.commit.hexsha != sha:
-                logging.debug("Resetting sha mismatch on: {}\n".format(formula['name']))
-                repo.head.reset(commit=sha, index=True, working_tree=True)
+        if repo.head.commit.hexsha != sha:
+            logging.debug("Resetting sha mismatch on: {}\n".format(formula['name']))
+            repo.head.reset(commit=sha, index=True, working_tree=True)
 
-            self.logger.debug("{formula[name]} is at {formula[revision]}".format(formula=formula))
+        self.logger.debug("{formula[name]} is at {formula[revision]}".format(formula=formula))
 
         source = os.path.join(repo_dir, formula['name'])
         if not os.path.exists(source):
